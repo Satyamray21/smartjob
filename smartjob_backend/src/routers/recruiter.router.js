@@ -1,5 +1,7 @@
 import {Router} from "express";
-import {createRecruiter} from "../controllers/recruiter.controller.js";
+import {createRecruiter,
+    viewRecruiterById
+} from "../controllers/recruiter.controller.js";
 import {upload} from "../middlewares/imageMulter.middleware.js";
 const router = Router();
 router.route("/").post(
@@ -11,4 +13,5 @@ router.route("/").post(
    ]),
    createRecruiter
 )
+router.get("/:recruiterId",viewRecruiterById);
 export default router;
