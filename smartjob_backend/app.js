@@ -1,7 +1,11 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 app.use(cors({
@@ -20,7 +24,10 @@ app.use(express.urlencoded(
         limit: "10mb"
     }
 ))
-
+app.use('/upload', express.static(path.join(__dirname, 'upload')));
+app.use('/resume', express.static(path.join(__dirname, 'resume')))
 app.use(cookieParser());
+import recruiterRouter from "./src/routers/recruiter.router.js"
+app.use("/api/v1/recruiter",recruiterRouter)
 
 export { app }
