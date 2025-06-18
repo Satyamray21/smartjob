@@ -163,4 +163,41 @@ export const updateRecruiterById = asyncHandler(async (req, res) => {
     new ApiResponse(200, updatedRecruiter, "Recruiter updated successfully")
   );
 });
+export const updateStatus = asyncHandler(async(req,res)=>{
+    const {recruiterId,status} = req.params;
+    console.log("Req",recruiterId);
+    let updateFields = {}
+    switch(status.toLowerCase())
+    {
+        case "active":
+        updateFields = {isActive:true,isInactive:false,isBlocked:false}
+        break;
+        case "inactive":
+        updateFields ={isActive:false,isInactive:true,isBlocked:false}
+        break;
+        case "block":
+        updateFields={isActive:false,isInactive:false,isBlocked:true}
+        break;
+        default:
+            throw new ApiError(400, "Invalid status. Use 'active', 'inactive', or 'block'");
+
+    }
+    const recruiter = await Recruiter.findOneAndUpdate(
+        {recruiterId},
+        updateFields,
+        {new:true,runValidators:true}
+    );
+    if(!recruiter)
+    {
+        throw new ApiError(404,"Recruiter not found");
+    }
+    return res
+    .status(200)
+    .json(new ApiResponse(
+        200,recruiter,"Status updated Successfully"
+    ))
+
+
+
+})
 

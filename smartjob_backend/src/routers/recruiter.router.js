@@ -3,7 +3,8 @@ import {createRecruiter,
     viewRecruiterById,
     viewAllRecruiter,
     deleteRecruiter,
-    updateRecruiterById
+    updateRecruiterById,
+    updateStatus
 
 } from "../controllers/recruiter.controller.js";
 import {upload} from "../middlewares/imageMulter.middleware.js";
@@ -28,4 +29,5 @@ router.route("/:recruiterId").put(
         }                 
    ]),
 updateRecruiterById);
+router.patch("/:recruiterId/:status",updateStatus);
 export default router;
