@@ -2,7 +2,8 @@ import {Router} from "express";
 import {createRecruiter,
     viewRecruiterById,
     viewAllRecruiter,
-    deleteRecruiter
+    deleteRecruiter,
+    updateRecruiterById
 
 } from "../controllers/recruiter.controller.js";
 import {upload} from "../middlewares/imageMulter.middleware.js";
@@ -19,4 +20,12 @@ router.route("/").post(
 router.get("/",viewAllRecruiter);
 router.get("/:recruiterId",viewRecruiterById);
 router.delete("/:recruiterId",deleteRecruiter);
+router.route("/:recruiterId").put(
+    upload.fields([
+        {
+            name:"profileImage",
+            maxCount:1
+        }                 
+   ]),
+updateRecruiterById);
 export default router;
