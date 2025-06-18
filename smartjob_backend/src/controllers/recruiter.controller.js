@@ -68,3 +68,16 @@ export const createRecruiter = asyncHandler(async(req,res)=>{
         
     )
 })
+
+export const viewRecruiterById = asyncHandler(async(req,res)=>{
+    const {recruiterId} = req.params;
+    console.log("RecruiterId",recruiterId);
+    const recruiter = await Recruiter.findOne({recruiterId}).select("-password");
+    if(!recruiter) {
+        console.log("Recruiter not found for ID:", recruiterId);
+        throw new ApiError(404,"Recruiter not found");
+    }
+    return res
+    .status(200)
+    .json(new ApiResponse(200,recruiter,"Recruiter details fetched"))
+})
