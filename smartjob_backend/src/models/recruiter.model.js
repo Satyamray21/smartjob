@@ -41,7 +41,8 @@ const recruiterSchema =  new mongoose.Schema({
        months:{
         type:Number,
         required:true,
-        default:0
+        default:0,
+        max:11
        }
     },
        education:{

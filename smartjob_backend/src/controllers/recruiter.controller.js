@@ -5,7 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import {Recruiter} from "../models/recruiter.model.js";
 
 export const createRecruiter = asyncHandler(async(req,res)=>{
-    console.log("req",req.body);
+    
     const {first_name,middle_name,last_name,gender,job_function,email,mobile,years,months,education,skills,pin_code,locality,state,city,
         password,description
     }=req.body
@@ -71,13 +71,38 @@ export const createRecruiter = asyncHandler(async(req,res)=>{
 
 export const viewRecruiterById = asyncHandler(async(req,res)=>{
     const {recruiterId} = req.params;
-    console.log("RecruiterId",recruiterId);
+    
     const recruiter = await Recruiter.findOne({recruiterId}).select("-password");
     if(!recruiter) {
-        console.log("Recruiter not found for ID:", recruiterId);
+       
         throw new ApiError(404,"Recruiter not found");
     }
     return res
     .status(200)
     .json(new ApiResponse(200,recruiter,"Recruiter details fetched"))
+})
+export const viewAllRecruiter = asyncHandler(async(req,res)=>{
+    const allRecruiter = await Recruiter.find().select("-password");
+    if(!allRecruiter)
+    {
+        throw new ApiError(404,"Recruiter not found")
+    }
+    return res.
+    status(200)
+    .json(
+        new ApiResponse(200,allRecruiter,"All Recruiter fetched Successfully")
+    )
+})
+export const deleteRecruiter = asyncHandler(async(req,res)=>{
+    const{recruiterId}= req.params;
+    const recruiter = await Recruiter.findOneAndDelete({recruiterId});
+    if(!recruiter)
+    {
+        throw new ApiError(404,"Recruiter not found");
+    }
+    res.
+    status(200)
+    .json(
+        new ApiResponse(200,{},"Recruiter deleted Successfully")
+    )
 })
