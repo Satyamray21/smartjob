@@ -4,7 +4,10 @@ import {createRecruiter,
     viewAllRecruiter,
     deleteRecruiter,
     updateRecruiterById,
-    updateStatus
+    updateStatus,
+    inactiveRecruiter,
+    activeRecruiter,
+    blockRecruiter
 
 } from "../controllers/recruiter.controller.js";
 import {upload} from "../middlewares/imageMulter.middleware.js";
@@ -19,6 +22,10 @@ router.route("/").post(
    createRecruiter
 )
 router.get("/",viewAllRecruiter);
+router.get("/active-list",activeRecruiter);
+router.get("/inactive-list",inactiveRecruiter);
+router.get("/blocked-list",blockRecruiter);
+
 router.get("/:recruiterId",viewRecruiterById);
 router.delete("/:recruiterId",deleteRecruiter);
 router.route("/:recruiterId").put(
@@ -30,4 +37,7 @@ router.route("/:recruiterId").put(
    ]),
 updateRecruiterById);
 router.patch("/:recruiterId/:status",updateStatus);
+
+
+
 export default router;

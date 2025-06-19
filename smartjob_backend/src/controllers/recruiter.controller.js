@@ -165,7 +165,7 @@ export const updateRecruiterById = asyncHandler(async (req, res) => {
 });
 export const updateStatus = asyncHandler(async(req,res)=>{
     const {recruiterId,status} = req.params;
-    console.log("Req",recruiterId);
+    
     let updateFields = {}
     switch(status.toLowerCase())
     {
@@ -199,5 +199,36 @@ export const updateStatus = asyncHandler(async(req,res)=>{
 
 
 
+})
+
+export const activeRecruiter = asyncHandler(async (req, res) => {
+  const recruiters = await Recruiter.find({
+    isActive: true,
+    
+  });
+
+  if (!recruiters.length) {
+    throw new ApiError(404, "No active recruiters found");
+  }
+
+  res.status(200).json(
+    new ApiResponse(200, recruiters, "Active Recruiter list fetched successfully")
+  );
+});
+
+export const inactiveRecruiter = asyncHandler(async(req,res)=>{
+    const recruiter = await Recruiter.find({isActive:false,isInactive:true,isBlocked:false})
+    res.status(200).json(
+    new ApiResponse(200, recruiter, recruiter.length ? "Inactive Recruiter list fetched successfully" : "No Inactive recruiters found")
+);
+
+})
+export const blockRecruiter = asyncHandler(async(req,res)=>{
+    const recruiter = await Recruiter.find({isActive:false,isInactive:false,isBlocked:true})
+    res
+    .status(201)
+    .json(
+        new ApiResponse(200,recruiter,recruiter.length ? "Blocked Recruiter list fetched successfully" : "No Blocked recruiters found")
+    )
 })
 
