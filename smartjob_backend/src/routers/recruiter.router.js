@@ -7,7 +7,8 @@ import {createRecruiter,
     updateStatus,
     inactiveRecruiter,
     activeRecruiter,
-    blockRecruiter
+    blockRecruiter,
+    loginRecruiter
 
 } from "../controllers/recruiter.controller.js";
 import {upload} from "../middlewares/imageMulter.middleware.js";
@@ -25,7 +26,7 @@ router.get("/",viewAllRecruiter);
 router.get("/active-list",activeRecruiter);
 router.get("/inactive-list",inactiveRecruiter);
 router.get("/blocked-list",blockRecruiter);
-
+router.post("/login",loginRecruiter);
 router.get("/:recruiterId",viewRecruiterById);
 router.delete("/:recruiterId",deleteRecruiter);
 router.route("/:recruiterId").put(

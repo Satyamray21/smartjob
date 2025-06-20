@@ -118,7 +118,7 @@ recruiterSchema.pre("save",async function(next) {
     }
     if(!this. recruiterId)
     {
-        const prefix = "SMRT"
+        const prefix = "RECT"
         const randomDigit = Math.floor(1000 + Math.random() * 9000);
          this.recruiterId = `${prefix}_${randomDigit}`
     }

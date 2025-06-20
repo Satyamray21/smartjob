@@ -4,6 +4,8 @@ import {asyncHandler} from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import {Recruiter} from "../models/recruiter.model.js";
 import fs from "fs/promises";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt"
 import path from "path";
 export const createRecruiter = asyncHandler(async(req,res)=>{
     
@@ -14,7 +16,7 @@ export const createRecruiter = asyncHandler(async(req,res)=>{
     const existingRecruiter = await Recruiter.findOne({email});
     if(existingRecruiter)
     {
-        throw new ApiError(409,"User is already registered with mail")
+        throw new ApiError(409,"Recruiter is already registered with mail")
     }
 
     const profileImageLocalPath = req.files?.profileImage?.[0]?.path;
@@ -69,7 +71,56 @@ export const createRecruiter = asyncHandler(async(req,res)=>{
         
     )
 })
+export const loginRecruiter = asyncHandler(async(req,res)=>{
+  try{
+ const {email,password}=req.body;
+ if(!email || !password)
+ {
+  throw new ApiError(403,"Please enter your email or password")
+ }
+ const recruiter = await Recruiter.findOne({email}).select("+password");
+ if(!recruiter)
+ {
+  throw new ApiError(404,"Recruiter not found with this emailId");
+ }
+  if(recruiter.isInactive)
+  {
+    throw new ApiError(403,"Your account has been inactived , Please contact admin ");
+  }
+  if(recruiter.isBlocked)
+  {
+    throw new ApiError(403,"Your account has been blocked,Please contact admin");
+  }
 
+  const isPasswordCorrect = await bcrypt.hash(password,recruiter.password);
+  if(!isPasswordCorrect)
+  {
+    throw new ApiError(401,"Password is invalid");
+  }
+  const token = jwt.sign(
+    {recruiterId:recruiter.recruiterId, id:recruiter._id },
+    process.env.ACCESS_TOKEN_SECRET,
+    {expiresIn:"12h"},
+  );
+   res.cookie("accessToken", token, { httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 3600000 }); 
+   const recruiterData = recruiter.toObject();
+    delete recruiterData.password;
+
+    return res.status(200).json(
+      new ApiResponse(200, {
+        token,
+        recruiter: recruiterData,
+      }, "Login Successfully")
+    );
+}
+catch (err) {
+  return res
+    .status(400)
+    .json(new ApiResponse(400, null, `Login Failed: ${err.message}`));
+}
+
+
+})
 export const viewRecruiterById = asyncHandler(async(req,res)=>{
     const {recruiterId} = req.params;
     
