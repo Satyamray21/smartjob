@@ -7,6 +7,7 @@ import fs from "fs/promises";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt"
 import path from "path";
+import sendEmail from '../utils/sendEmail.js';
 export const createRecruiter = asyncHandler(async(req,res)=>{
     
     const {first_name,middle_name,last_name,gender,job_function,email,mobile,years,months,education,skills,pin_code,locality,state,city,
@@ -312,4 +313,113 @@ export const blockRecruiter = asyncHandler(async(req,res)=>{
         new ApiResponse(200,recruiter,recruiter.length ? "Blocked Recruiter list fetched successfully" : "No Blocked recruiters found")
     )
 })
+export const changeRecruiterPassword = async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: 'Access denied. No token provided or invalid format.' });
+        }
+
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+        const { oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ message: 'Old and new password are required' });
+        }
+
+        const recruiter= await Recruiter.findById(decoded.id);
+        if (!recruiter) {
+            return res.status(404).json({ message: 'Recrruiter not found' });
+        }
+
+        const isMatch = await recruiter.isPasswordCorrect(oldPassword);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Old password is incorrect' });
+        }
+
+        recruiter.password = newPassword;
+
+        
+        await recruiter.save({ validateBeforeSave: false });
+
+        return res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Error in changeRecruiterPassword:', error);
+        return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+};
+
+// OTP Send by Email
+export const sendResetCode = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: "Email is required" });
+
+        const recruiter = await Recruiter.findOne({ email });
+        if (!recruiter) return res.status(404).json({ message: "Recruiter not found" });
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+        const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        recruiter.resetPasswordOTP = otp;
+        recruiter.resetPasswordExpires = expiry;
+        await recruiter.save({ validateBeforeSave: false });
+
+        // HTML email content
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                <h2 style="color: #2e7d32; text-align: center;">SmartJob - Password Reset</h2>
+                <p>Hello,</p>
+                <p>You requested to reset your SmartJob account password. Please use the OTP below to proceed:</p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <span style="font-size: 30px; font-weight: bold; color: #2e7d32; background: #f1f1f1; padding: 12px 24px; border-radius: 8px; letter-spacing: 4px;">
+                        ${otp}
+                    </span>
+                </div>
+                <p>This OTP is valid for <strong>10 minutes</strong>. Please do not share it with anyone.</p>
+                <p>If you didn’t request this password reset, you can safely ignore this email.</p>
+                <br/>
+                <p style="color: #555;">Thanks & Regards,<br/>SmartJob Team</p>
+            </div>
+        `;
+
+        await sendEmail(email, 'SmartJob Password Reset OTP', htmlContent);
+
+        res.status(200).json({ message: 'OTP sent to email successfully' });
+    } catch (error) {
+        console.error('Error in sendResetCode:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+};
+
+// Reset Password by OTP
+export const resetPasswordWithOtp = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        const recruiter = await Recruiter.findOne({ email });
+        if (!recruiter) return res.status(404).json({ message: 'Recruiter not found' });
+
+        if (
+           recruiter.resetPasswordOTP !== otp ||
+            !recruiter.resetPasswordExpires ||
+            recruiter.resetPasswordExpires < new Date()
+        ) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        recruiter.password = newPassword;
+         recruiter.resetPasswordOTP = undefined;
+         recruiter.resetPasswordExpires = undefined;
+
+        await  recruiter.save({ validateBeforeSave: false });
+
+        res.status(200).json({ message: 'Password reset successful' });
+    } catch (error) {
+        console.error('Error in resetPasswordWithOtp:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+};
 

@@ -9,7 +9,10 @@ import {createRecruiter,
     activeRecruiter,
     blockRecruiter,
     loginRecruiter,
-    logoutRecruiter
+    logoutRecruiter,
+     sendResetCode,
+    resetPasswordWithOtp,
+    changeRecruiterPassword
 
 } from "../controllers/recruiter.controller.js";
 import {upload} from "../middlewares/imageMulter.middleware.js";
@@ -29,6 +32,9 @@ router.get("/inactive-list",inactiveRecruiter);
 router.get("/blocked-list",blockRecruiter);
 router.post("/login",loginRecruiter);
 router.post("/logout",logoutRecruiter);
+router.post('/change-password', changeRecruiterPassword);
+router.post('/send-reset-code', sendResetCode);
+router.post('/reset-password', resetPasswordWithOtp);
 router.get("/:recruiterId",viewRecruiterById);
 router.delete("/:recruiterId",deleteRecruiter);
 router.route("/:recruiterId").put(
