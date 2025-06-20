@@ -106,6 +106,12 @@ const recruiterSchema =  new mongoose.Schema({
         type:String,
         unique:true
        },
+       resetPasswordOTP: {
+            type: String,
+        },
+        resetPasswordExpires: {
+            type: Date,
+        },
 
     
 
