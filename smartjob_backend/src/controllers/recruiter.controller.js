@@ -121,6 +121,36 @@ catch (err) {
 
 
 })
+const tokenBlacklist = new Set();
+export const logoutRecruiter  = asyncHandler(async(req,res)=>{
+   try {
+    
+    const token =
+      req.cookies?.accessToken ||
+      req.header("Authorization")?.replace("Bearer ", "").trim();
+    if (!token) {
+    return res
+      .status(401)
+      .json(new ApiResponse(401, null, "User not logged in"));
+  }
+    if (token) {
+      tokenBlacklist.add(token);
+    }
+
+    
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/"
+    });
+
+    res.status(200).json(new ApiResponse(200,{}, "User logged out successfully"));
+  } catch (error) {
+    console.error("Logout error:", error.message);
+    throw new ApiError(500, "Logout failed", error.message);
+  }
+}) 
 export const viewRecruiterById = asyncHandler(async(req,res)=>{
     const {recruiterId} = req.params;
     
