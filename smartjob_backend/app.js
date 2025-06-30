@@ -29,5 +29,7 @@ app.use('/resume', express.static(path.join(__dirname, 'resume')))
 app.use(cookieParser());
 import recruiterRouter from "./src/routers/recruiter.router.js"
 app.use("/api/v1/recruiter",recruiterRouter)
+import jdRouter from "./src/routers/jd.router.js"
+app.use("/api/v1/jd",jdRouter)
 
 export { app }
