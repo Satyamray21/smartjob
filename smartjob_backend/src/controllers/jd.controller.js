@@ -93,3 +93,20 @@ export const getOwnPostedJD = asyncHandler(async(req,res)=>{
      return res.status(200).json(new ApiResponse(200, formattedJobs, "Recruiter's job postings fetched successfully"));
 })
 
+export const deleteJd = asyncHandler(async(req,res)=>{
+  const {job_id} = req.params;
+  try{
+    const jd = await JD.findOneAndDelete({job_id})
+    if(!jd)
+    {
+      throw new ApiError(404,"JD Not found");
+    }
+    res.status(200)
+    .json(new ApiResponse(200,{},"JD deleted successfully"));
+  }
+  catch(error)
+  {
+    console.log("Error",error.message);
+    throw new ApiError(500,"Failed to delete Jd",[error.message]);
+  }
+})
