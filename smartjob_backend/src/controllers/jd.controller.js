@@ -71,3 +71,25 @@ export const getAllJd = asyncHandler(async(req,res)=>{
      throw new ApiError(500, "Failed to create job", [error.message]);
   }
 })
+
+export const getOwnPostedJD = asyncHandler(async(req,res)=>{
+  const recruiterId = req.user.id;
+  const viewJd = await JD.find({posted_by:recruiterId})
+                  .populate("posted_by", "recruiterId")
+                  .sort({createdAt:-1})
+
+    if(!viewJd || viewJd.length==0)
+    {
+      throw new ApiError(404, "No job postings found for this recruiter.");
+    }
+  
+    const formattedJobs = viewJd.map(job => ({
+    ...job.toObject(),
+    posted_by: job.posted_by?.recruiterId || null,
+    application_deadline: job.application_deadline
+      ? new Date(job.application_deadline).toLocaleDateString("en-GB").replace(/\//g, "-")
+      : null,
+  }));
+     return res.status(200).json(new ApiResponse(200, formattedJobs, "Recruiter's job postings fetched successfully"));
+})
+
