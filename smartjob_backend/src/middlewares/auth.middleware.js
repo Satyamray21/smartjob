@@ -26,7 +26,11 @@ export const verifyRecruiter = asyncHandler(async (req, res, next) => {
       throw new ApiError(403, "Your account is not active");
     }
 
-    req.user = recruiter; 
+     req.user = {
+      id: recruiter._id,
+      recruiterId: recruiter.recruiterId,
+      email: recruiter.email,
+    }; 
     next();
   } catch (error) {
     throw new ApiError(401, "Invalid or expired token", [error.message]);
